@@ -73,3 +73,5 @@ function plant_of_detail() {
 
 	
 };
+
+
