@@ -2,7 +2,7 @@
   "1": {
     "plot_id": "274",
     "len": "5000",
-    "wid": "2",
+    "wid": "3500",
     "location": "Tenkasi",
     "owner_name": "Ramu",
     "contact_no": "96984",
