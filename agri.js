@@ -1,29 +1,9 @@
 const fs = require('fs')
-
+const prompt = require('prompt-sync')()
 function createLand () {
-  const prompt1 = require('prompt-sync')()
-  const prompt2 = require('prompt-sync')()
-  const prompt3 = require('prompt-sync')()
-  const prompt4 = require('prompt-sync')()
-  const prompt5 = require('prompt-sync')()
-  const prompt6 = require('prompt-sync')()
-  const prompt7 = require('prompt-sync')()
-  const prompt8 = require('prompt-sync')()
-  const prompt9 = require('prompt-sync')()
-
-  const surveyNumber = prompt1('surveyNumber ')
-  const Length = prompt2('Length ')
-  const Width = prompt3('Width ')
-  const Location = prompt4('Location ')
-  const ownerName = prompt5('ownerName ')
-  const contactNo = prompt6('contactNo ')
-  const Soil = prompt7('Soil ')
-  const soilPh = prompt8('soilPh ')
-  const Plant = prompt9('Plant ')
-
   class Plot {
-    constructor (surveyNumber, Length, Width, Location, ownerName, contactNo, Soil, soilPh, Plant) {
-      this.plot_id = surveyNumber
+    constructor (id, Length, Width, Location, ownerName, contactNo, Soil, soilPh, Plant) {
+      this.plot_id = id
       this.len = Length
       this.wid = Width
       this.location = Location
@@ -41,58 +21,69 @@ function createLand () {
     }
     const data = fs.readFileSync('store.txt', 'utf8')
     const landsDetails = JSON.parse(data)
-    const landsCount = (Object.keys(landsDetails).length)
-    landsDetails[landsCount + 1] = new Plot(surveyNumber, Length, Width, Location, ownerName, contactNo, Soil, soilPh, Plant)
-    fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
+    const landsKeys = Object.keys(landsDetails)
+    const id = prompt('surveyNumber ')
 
-    console.log('Land details added')
-    console.log('\r\n', landsDetails[landsCount + 1])
+    if (!landsKeys.includes(id)) {
+      const Length = prompt('Length ')
+      const Width = prompt('Width ')
+      const Location = prompt('Location ')
+      const ownerName = prompt('ownerName ')
+      const contactNo = prompt('contactNo ')
+      const Soil = prompt('Soil ')
+      const soilPh = prompt('soilPh ')
+      const Plant = prompt('Plant ')
+
+      landsDetails[id] = new Plot(id, Length, Width, Location, ownerName, contactNo, Soil, soilPh, Plant)
+      fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
+
+      console.log('Land details added')
+      console.log('\r\n', landsDetails[id])
+    } else { console.log('Already land is existed') }
   })
 };
 
 function display () {
-  const data = fs.readFileSync('store.txt', 'utf8')
-  const landsDetails = JSON.parse(data)
-  const landsCount = (Object.keys(landsDetails).length)
+  fs.readFile('store.txt', 'utf8', function (err, data) {
+    if (err) { console.log('No lands are added') }
+    if (data) {
+      const landsDetails = JSON.parse(data)
+      const landsCount = (Object.keys(landsDetails).length)
 
-  console.log('\r\n' + 'Number of lands are ', landsCount)
-  console.log('\r\n' + 'The lands details are ', landsDetails)
+      console.log('\r\n' + 'Number of lands are ', landsCount)
+      console.log('\r\n' + 'The lands details are ', landsDetails)
+    }
+  })
 }
 
 function changeData () {
-  const prompt1 = require('prompt-sync')()
-  const prompt2 = require('prompt-sync')()
-  const prompt3 = require('prompt-sync')()
-
   const data = fs.readFileSync('store.txt', 'utf8')
   const landsDetails = JSON.parse(data)
   const landsKeys = (Object.keys(landsDetails))
   const landsChar = (Object.keys(landsDetails[1]))
 
-  const id = prompt1(' Id number ')
+  const id = prompt(' Id number ')
 
   if (landsKeys.includes(id)) {
-    console.log(landsChar)
-    const property = prompt2(' Which data to be change ')
-
-    if (landsChar.includes(property)) {
-      const detail = prompt3(' Enter the data ')
+    for (let i = 0; i < landsChar.length; i++) {
+      const changeProp = landsChar[i]
+      const bool = prompt(' is change for ? ' + changeProp + ' give y/n ')
+      if (bool === 'n') { continue }
+      const detail = prompt(' Enter the data for ' + changeProp + ' ')
       if (detail !== '') {
         const mainKey = landsDetails[id]
-        mainKey[property] = detail
-
-        fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
+        mainKey[changeProp] = detail
       }
-      console.log('\r\n' + 'Land details modified')
-      console.log('\r\n', landsDetails[id])
-    } else { console.log('property doest not exist') }
+    }
+    fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
+    console.log('\r\n' + 'Land details modified')
+    console.log('\r\n', landsDetails[id])
   } else { console.log('id does not exist') }
 }
 
 function findPlant () {
   const array = []
-  const prompt1 = require('prompt-sync')()
-  const reqPlant = prompt1('Enter the plant name ')
+  const reqPlant = prompt('Enter the plant name ')
 
   const data = fs.readFileSync('store.txt', 'utf8')
   const landsDetails = JSON.parse(data)
@@ -119,10 +110,10 @@ function findPlant () {
   }
 }
 
-// console.log(createLand()) // to add a land
+// createLand() // to add a land
 
-// console.log(display()) // to view all the land details
+// display() // to view all the land details
 
-console.log(changeData()) // to modify the existing land details
+changeData() // to modify the existing land details
 
-// console.log(findPlant()) // to find no of lands having particular plant
+// findPlant() // to find no of lands having particular plant
