@@ -1,23 +1,21 @@
 {
-  "273": {
-    "plot_id": "273",
-    "len": "7000",
-    "wid": "8000",
-    "location": "Tenkasi",
-    "owner_name": "Thomas",
-    "contact_no": "56656",
+  "255": {
+    "plot_id": "255",
+    "len": "4500",
+    "wid": "3400",
+    "owner_name": "Ramu",
+    "contact_no": "56789",
     "soil": "Red Soil",
     "soil_ph": "5",
     "plant": "Tea"
   },
   "274": {
     "plot_id": "274",
-    "len": "7500",
-    "wid": "5000",
-    "location": "Tenkasi",
+    "len": "6000",
+    "wid": "8000",
     "owner_name": "Andrews",
-    "contact_no": "96981",
-    "soil": "Red Soil",
+    "contact_no": "969841",
+    "soil": "4",
     "soil_ph": "5",
     "plant": "Rice"
   }
