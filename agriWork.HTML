@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>AgriCulture</title>
+
+</head>
+
+<body>
+
+<h1 style="text-align: center;">AgriCulture</h1>
+
+<h2>Add land</h2>
+
+<form action = "/addLand" method = "post">
+
+    Survey number <input type = "text" id = "plotId" name = "plotId" size = "20"><br><br>
+     Length of land <input type = "text" id = "length" name = "length" size = "20"><br><br>
+     Width of Land <input type = "text" id = "width" name = "width" size = "20"><br><br>
+     Location of land <input type = "text" id = "location" name = "location" size = "20"><br><br>
+     Owner Name<input type = "text" id = "ownerName" name = "ownerName" size = "20"><br><br>
+     Owner contact number<input type = "contactNo" id = "" name = "contactNo" size = "20"><br><br>
+     Soil<input type = "text" id = "soil" name = "soil" size = "20"><br><br>
+     Ph of Soil <input type = "text" id = "soilPh" name = "soilPh" size = "20"><br><br>
+     Crop on Plant<input type = "text" id = "corp" name = "corp" size = "20"><br><br>
+     <button type = "submit" name = "submit">
+         Add land
+     </button>
+
+</form>
+
+<h2>Display all the lands</h2>
+
+<form action = "/display" method = "post">
+
+    <button type = "submit" name = "submit">Click to view all tha land details</button>
+
+</form>
+
+<h2>Find the Plant</h2>
+
+<form action = "/findPlant" method = "post">
+
+    Requested Plant<input type = "text" id = "reqPlant" name = "reqPlant" size = "20"><br><br>
+     <button type = "submit" name = "submit">
+         Submit
+     </button>
+
+</form>
+
+<h2>Delete the Land</h2>
+
+<form action = "/deleteLand" method = "post">
+
+    Requested Land<input type = "text" id = "landId" name = "landId" size = "20"><br><br>
+     <button type = "submit" name = "submit">
+         Submit
+     </button>
+
+</form>
+
+<h2>Change the Details</h2>
+
+<form action = "/changeProperty" method = "post">
+
+    Land Id<input type = "text" id = "lanDId" name = "lanDId" size = "20"><br><br>
+    Property Name<input type = "text" id = "property" name = "property" size = "20"><br><br>
+    Data<input type = "text" id = "data" name = "data" size = "20"><br><br>
+     <button type = "submit" name = "submit">
+         Submit
+     </button>
+</form>
+
+
+
+</body>
+</html>
