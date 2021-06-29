@@ -1,20 +1,17 @@
+const express = require('express')
+const bodyParser = require('body-parser')
 const fs = require('fs')
-const prompt = require('prompt-sync')()
-function createLand () {
-  class Plot {
-    constructor (id, Length, Width, Location, ownerName, contactNo, Soil, soilPh, Plant) {
-      this.plot_id = id
-      this.len = Length
-      this.wid = Width
-      this.location = Location
-      this.owner_name = ownerName
-      this.contact_no = contactNo
-      this.soil = Soil
-      this.soil_ph = soilPh
-      this.plant = Plant
-    }
-  }
+const app = express()
 
+app.use(bodyParser.urlencoded({
+  extended: true
+}))
+
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/agriWork.HTML')
+})
+
+app.post('/addLand', function (req, res) {
   fs.readFile('store.txt', 'utf8', function (err) {
     if (err) {
       fs.writeFileSync('store.txt', '{}', 'utf8')
@@ -22,171 +19,142 @@ function createLand () {
     const data = fs.readFileSync('store.txt', 'utf8')
     const landsDetails = JSON.parse(data)
     const landsKeys = Object.keys(landsDetails)
-    const id = prompt('surveyNumber ')
+    const id = req.body.plotId
 
     if (!landsKeys.includes(id)) {
-      const Length = prompt('Length ')
-      const Width = prompt('Width ')
-      const Location = prompt('Location ')
-      const ownerName = prompt('ownerName ')
-      const contactNo = prompt('contactNo ')
-      const Soil = prompt('Soil ')
-      const soilPh = prompt('soilPh ')
-      const Plant = prompt('Plant ')
+      const length = req.body.length
+      const width = req.body.width
+      const Location = req.body.Location
+      const ownerName = req.body.ownerName
+      const contactNo = req.body.contactNo
+      const soil = req.body.soil
+      const soilPh = req.body.soilPh
+      const corp = req.body.corp
 
-      landsDetails[id] = new Plot(id, Length, Width, Location, ownerName, contactNo, Soil, soilPh, Plant)
+      class Plot {
+        constructor (id, length, width, Location, ownerName, contactNo, soil, soilPh, corp) {
+          this.plot_id = id
+          this.len = length
+          this.wid = width
+          this.location = Location
+          this.owner_name = ownerName
+          this.contact_no = contactNo
+          this.soil = soil
+          this.soil_ph = soilPh
+          this.plant = corp
+        }
+      }
+      landsDetails[id] = new Plot(id, length, width, Location, ownerName, contactNo, soil, soilPh, corp)
+
       fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
-
-      console.log('Land details added')
-      console.log('\r\n', landsDetails[id])
-
-      const nextData = prompt('want to add another land, provide y/n ')
-      if (nextData === 'y') { createLand() } else { menu() }
+      res.write(JSON.stringify(landsDetails[id], null, 2))
+      res.end('land is added')
     } else {
-      console.log('\r\n' + 'Already land is existed')
-      const nextData = prompt('want to add another land, provide y/n ')
-      if (nextData === 'y') { createLand() } else { menu() }
+      return res.end('The land id is already exist')
     }
   })
-};
+})
 
-function display () {
+app.post('/display', function (req, res) {
   fs.readFile('store.txt', 'utf8', function (err, data) {
     if (err) {
-      console.log('\r\n' + 'No lands are added' + '\r\n')
-      const Menu = prompt('Enter to menu ')
-      if (Menu === '') { menu() }
+      return res.end('No lands are added')
     } else {
       const landsDetails = JSON.parse(data)
       const landsCount = (Object.keys(landsDetails).length)
 
-      console.log('\r\n' + 'Number of lands are ', landsCount)
-      console.log('\r\n' + 'The lands details are ', landsDetails)
-
-      const Menu = prompt('Enter to menu ')
-      if (Menu === '') { menu() }
+      res.write('Number of lands are ' + landsCount)
+      res.write('\r\n' + 'The lands details are ' + '\r\n')
+      res.end(JSON.stringify(landsDetails, null, 2))
     }
   })
-}
+})
 
-function changeProperty () {
+app.post('/findPlant', function (req, res) {
   fs.readFile('store.txt', 'utf8', function (err, data) {
     if (err) {
-      console.log('\r\n' + 'No lands are added' + '\r\n')
-      const Menu = prompt('Enter to menu ')
-      if (Menu === '') { menu() }
-    } else {
-      const landsDetails = JSON.parse(data)
-      const landsKeys = (Object.keys(landsDetails))
-      const landsChar = (Object.keys(landsDetails[landsKeys[0]]))
-
-      const id = prompt(' Id number ')
-      if (!landsKeys.includes(id)) {
-        console.log('\r\n' + 'Entered id is not available')
-        const nextData = prompt('want to change another land data, provide y/n ')
-        if (nextData === 'y') { changeProperty() } else { menu() }
-      } else { changeData() }
-
-      function changeData () {
-        console.log(landsChar)
-        const property = prompt(' Which property to be change ')
-
-        if (landsChar.includes(property)) {
-          const detail = prompt(' Enter the data ')
-          if (detail !== '') {
-            const mainKey = landsDetails[id]
-            mainKey[property] = detail
-          }
-          const nextProperty = prompt('want to change another property,provide y/n ')
-          if (nextProperty === 'y') { changeData() } else {
-            fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
-            console.log('\r\n' + 'Land details modified')
-            console.log('\r\n', landsDetails[id])
-            const nextData = prompt('want to change another land data, provide y/n ')
-            if (nextData === 'y') { changeProperty() } else { menu() }
-          }
-        } else {
-          console.log('Entered property is invalid, Enter correct property')
-          changeData()
-        }
-      }
-    }
-  })
-}
-function findPlant () {
-  fs.readFile('store.txt', 'utf8', function (err, data) {
-    if (err) {
-      console.log('\r\n' + 'No lands are added' + '\r\n')
-      const Menu = prompt('Enter to menu ')
-      if (Menu === '') { menu() }
+      return res.end('No lands are added')
     } else {
       const array = []
-      const reqPlant = prompt('Enter the plant name ')
+      const reqPlant = req.body.reqPlant
       const landsDetails = JSON.parse(data)
 
       for (const id in landsDetails) {
         if (landsDetails[id].plant === reqPlant) { array.push(id) }
       }
       if (array.length > 0) {
-        console.log('\r\n' + ' no of plots with ' + reqPlant + ' = ' + array.length) // no of lands with this plant
+        res.write('\r\n' + ' no of plots with ' + reqPlant + ' = ' + array.length) // no of lands with this plant
 
-        console.log('\r\n' + ' plot numbers which is with ' + reqPlant + ' = ' + array) // land id of with this plant is stored
-        getLandDet()
-        function getLandDet () {
-          console.log('\r\n' + ' The details of land which is having ' + reqPlant + 'are ')
+        res.write('\r\n' + ' plot numbers which is with ' + reqPlant + ' = ' + array) // land id of with this plant is stored
 
-          for (let i = 0; i < array.length; i++) {
-            const ref = i + 1
-            const plantLandDet = landsDetails[array[i]]
+        res.write('\r\n' + ' The details of land which is having ' + reqPlant + ' are ')
 
-            console.log('\r\n' + ' S.N. ' + ref + ' > ', plantLandDet)
-          }
-          const nextData = prompt('want to check another plant,provide y/n ')
-          if (nextData === 'y') { findPlant() } else { menu() }
-        }
+        for (let i = 0; i < array.length; i++) {
+          const ref = i + 1
+          const plantLandDet = landsDetails[array[i]]
+
+          res.write('\r\n' + ' S.N. ' + ref + ' > ')
+          res.write(JSON.stringify(plantLandDet, null, 2))
+        } res.end()
       } else {
-        console.log('\r\n' + 'Entered plant is not available')
-        const nextData = prompt('want to check another plant,provide y/n ')
-        if (nextData === 'y') { findPlant() } else { menu() }
+        return res.end('\r\n' + 'Entered plant is not available')
       }
     }
   })
-}
+})
 
-function deleteLand () {
+app.post('/deleteLand', function (req, res) {
   fs.readFile('store.txt', 'utf8', function (err, data) {
     if (err) {
-      console.log('\r\n' + 'No lands are added' + '\r\n')
-      const Menu = prompt('Enter to menu ')
-      if (Menu === '') { menu() }
+      return res.end('No lands are added')
     } else {
-      const id = prompt('Enter the id ')
+      const id = req.body.landId
       const landsDetails = JSON.parse(data)
       const landsKeys = Object.keys(landsDetails)
       if (landsKeys.includes(id)) {
         delete landsDetails[id]
         fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
-        console.log('\r\n' + 'Land is deleted,Land id is ', id)
-        const nextData = prompt('want to delete another land, provide y/n ')
-        if (nextData === 'y') { deleteLand() } else { menu() }
+        res.write('\r\n' + 'Land is deleted,Land id is ')
+        res.write(id)
+        res.end()
       } else {
-        console.log('\r\n' + 'Enter id does not exist')
-        const nextData = prompt('want to delete another land, provide y/n ')
-        if (nextData === 'y') { deleteLand() } else { menu() }
+        return res.end('Enter id does not exist')
       }
     }
   })
-}
+})
 
-menu()
-function menu () {
-  console.log('\r\n' + 'Please find the menu')
-  console.log('\r\n' + '1.Create the land, 2.Display the details, 3.Find the plant, 4.Change the detail,5.Delete the land ' + '\r\n')
-  const need = prompt('Enter a number for operation ')
+app.post('/changeProperty', function (req, res) {
+  fs.readFile('store.txt', 'utf8', function (err, data) {
+    if (err) {
+      return res.end('No lands are added')
+    } else {
+      const landsDetails = JSON.parse(data)
+      const landsKeys = (Object.keys(landsDetails))
+      const landsChar = (Object.keys(landsDetails[landsKeys[0]]))
 
-  if (need === '1') { createLand() } // to add a land
-  if (need === '2') { display() } // to view all the land details
-  if (need === '3') { findPlant() } // to modify the existing land details
-  if (need === '4') { changeProperty() } // to find no of lands having particular plant
-  if (need === '5') { deleteLand() } // to delete the land
-}
+      const id = req.body.lanDId
+      if (!landsKeys.includes(id)) {
+        return res.end('Entered id is not available')
+      } else {
+        const property = req.body.property
+        if (landsChar.includes(property)) {
+          const detail = req.body.data
+          if (detail !== '') {
+            const mainKey = landsDetails[id]
+            mainKey[property] = detail
+          }
+          fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
+          res.write('\r\n' + 'Land details modified' + '\r\n')
+          res.end(JSON.stringify(landsDetails[id]), null, 2)
+        } else {
+          res.end('Entered property is not exist')
+        }
+      }
+    }
+  })
+})
+
+app.listen(8080, function () {
+  console.log('Node server is running..')
+})
