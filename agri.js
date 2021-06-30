@@ -1,64 +1,86 @@
 const express = require('express')
-const bodyParser = require('body-parser')
 const fs = require('fs')
+const router = express.Router()
+const alert = require('alert')
 const app = express()
+let surveyNumber = ''
+let reqProperty = ''
+const bodyParser = require('body-parser')
+const path = require('path')
 
-app.use(bodyParser.urlencoded({
+router.use(bodyParser.urlencoded({
   extended: true
 }))
 
-app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/agriWork.HTML')
+router.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, '/home.HTML'))
 })
 
-app.post('/addLand', function (req, res) {
-  fs.readFile('store.txt', 'utf8', function (err) {
+router.get('/addLand', function (req, res) {
+  res.sendFile(path.join(__dirname, '/addLand.HTML'))
+})
+
+router.get('/addLand/landDetail', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err) {
     if (err) {
-      fs.writeFileSync('store.txt', '{}', 'utf8')
+      fs.writeFileSync('store2.txt', '{}', 'utf8')
     }
-    const data = fs.readFileSync('store.txt', 'utf8')
+    const data = fs.readFileSync('store2.txt', 'utf8')
     const landsDetails = JSON.parse(data)
     const landsKeys = Object.keys(landsDetails)
-    const id = req.body.plotId
-
-    if (!landsKeys.includes(id)) {
-      const length = req.body.length
-      const width = req.body.width
-      const Location = req.body.Location
-      const ownerName = req.body.ownerName
-      const contactNo = req.body.contactNo
-      const soil = req.body.soil
-      const soilPh = req.body.soilPh
-      const corp = req.body.corp
-
-      class Plot {
-        constructor (id, length, width, Location, ownerName, contactNo, soil, soilPh, corp) {
-          this.plot_id = id
-          this.len = length
-          this.wid = width
-          this.location = Location
-          this.owner_name = ownerName
-          this.contact_no = contactNo
-          this.soil = soil
-          this.soil_ph = soilPh
-          this.plant = corp
-        }
-      }
-      landsDetails[id] = new Plot(id, length, width, Location, ownerName, contactNo, soil, soilPh, corp)
-
-      fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
-      res.write(JSON.stringify(landsDetails[id], null, 2))
-      res.end('land is added')
+    const id = req.query.plotId
+    if (!landsKeys.includes(id) && id !== '') {
+      surveyNumber = id
+      res.sendFile(path.join(__dirname, '/landDetail.HTML'))
+    } else if (id === '') {
+      alert('Please enter valid survey number')
+      res.sendFile(path.join(__dirname, '/addLand.HTML'))
     } else {
-      return res.end('The land id is already exist')
+      alert('The land id is already exist')
+      res.sendFile(path.join(__dirname, '/addLand.HTML'))
     }
   })
 })
 
-app.post('/display', function (req, res) {
-  fs.readFile('store.txt', 'utf8', function (err, data) {
+router.post('/addLand/landDetail/landAdded', function (req, res) {
+  const data = fs.readFileSync('store2.txt', 'utf8')
+  const landsDetails = JSON.parse(data)
+  const id = surveyNumber
+  const length = req.body.length
+  const width = req.body.width
+  const Location = req.body.Location
+  const ownerName = req.body.ownerName
+  const contactNo = req.body.contactNo
+  const soil = req.body.soil
+  const soilPh = req.body.soilPh
+  const corp = req.body.corp
+
+  class Plot {
+    constructor (id, length, width, Location, ownerName, contactNo, soil, soilPh, corp) {
+      this.plot_id = id
+      this.len = length
+      this.wid = width
+      this.location = Location
+      this.owner_name = ownerName
+      this.contact_no = contactNo
+      this.soil = soil
+      this.soil_ph = soilPh
+      this.plant = corp
+    }
+  }
+  landsDetails[id] = new Plot(id, length, width, Location, ownerName, contactNo, soil, soilPh, corp)
+
+  fs.writeFileSync('store2.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
+  alert('land is added')
+  res.write(JSON.stringify(landsDetails[id], null, 2))
+  res.end()
+})
+
+router.get('/displayLand', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err, data) {
     if (err) {
-      return res.end('No lands are added')
+      alert('No lands are added')
+      res.sendFile(path.join(__dirname, '/home.HTML'))
     } else {
       const landsDetails = JSON.parse(data)
       const landsCount = (Object.keys(landsDetails).length)
@@ -70,13 +92,21 @@ app.post('/display', function (req, res) {
   })
 })
 
-app.post('/findPlant', function (req, res) {
-  fs.readFile('store.txt', 'utf8', function (err, data) {
+router.get('/findPlant', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err) {
     if (err) {
-      return res.end('No lands are added')
+      alert('No lands are added')
+      res.sendFile(path.join(__dirname, '/home.HTML'))
     } else {
+      res.sendFile(path.join(__dirname, '/findPlant.HTML'))
+    }
+  })
+})
+router.get('/findPlant/plant', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err, data) {
+    if (!err) {
       const array = []
-      const reqPlant = req.body.reqPlant
+      const reqPlant = req.query.reqPlant
       const landsDetails = JSON.parse(data)
 
       for (const id in landsDetails) {
@@ -97,64 +127,110 @@ app.post('/findPlant', function (req, res) {
           res.write(JSON.stringify(plantLandDet, null, 2))
         } res.end()
       } else {
-        return res.end('\r\n' + 'Entered plant is not available')
+        alert('Entered plant is not available')
+        res.sendFile(path.join(__dirname, '/findPlant.HTML'))
       }
     }
   })
 })
 
-app.post('/deleteLand', function (req, res) {
-  fs.readFile('store.txt', 'utf8', function (err, data) {
+router.get('/deleteLand', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err) {
     if (err) {
-      return res.end('No lands are added')
+      alert('No lands are added')
+      res.sendFile(path.join(__dirname, '/home.HTML'))
     } else {
-      const id = req.body.landId
+      res.sendFile(path.join(__dirname, '/deleteLand.HTML'))
+    }
+  })
+})
+
+router.get('/deleteLand/land', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err, data) {
+    if (!err) {
+      const id = req.query.landId
       const landsDetails = JSON.parse(data)
       const landsKeys = Object.keys(landsDetails)
       if (landsKeys.includes(id)) {
         delete landsDetails[id]
-        fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
+        fs.writeFileSync('store2.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
         res.write('\r\n' + 'Land is deleted,Land id is ')
         res.write(id)
         res.end()
       } else {
-        return res.end('Enter id does not exist')
+        alert('Enter id does not exist')
+        res.sendFile(path.join(__dirname, '/deleteLand.HTML'))
       }
     }
   })
 })
 
-app.post('/changeProperty', function (req, res) {
-  fs.readFile('store.txt', 'utf8', function (err, data) {
+router.get('/changeProperty', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err) {
     if (err) {
-      return res.end('No lands are added')
+      alert('No lands are added')
+      res.sendFile(path.join(__dirname, '/home.HTML'))
     } else {
+      res.sendFile(path.join(__dirname, '/changeProperty.HTML'))
+    }
+  })
+})
+
+router.get('/changeProperty/id', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err, data) {
+    if (!err) {
+      const landsDetails = JSON.parse(data)
+      const landsKeys = (Object.keys(landsDetails))
+
+      const id = req.query.lanDId
+
+      if (!landsKeys.includes(id)) {
+        alert('Entered id is not available')
+        res.sendFile(path.join(__dirname, '/changeProperty.HTML'))
+      } else {
+        surveyNumber = id
+        res.sendFile(path.join(__dirname, '/getProperty.HTML'))
+      }
+    }
+  })
+})
+
+router.get('/changeProperty/id/prop', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err, data) {
+    if (!err) {
       const landsDetails = JSON.parse(data)
       const landsKeys = (Object.keys(landsDetails))
       const landsChar = (Object.keys(landsDetails[landsKeys[0]]))
-
-      const id = req.body.lanDId
-      if (!landsKeys.includes(id)) {
-        return res.end('Entered id is not available')
+      const property = req.query.property
+      if (!landsChar.includes(property)) {
+        alert('Entered property is not exist')
+        res.sendFile(path.join(__dirname, '/getProperty.HTML'))
       } else {
-        const property = req.body.property
-        if (landsChar.includes(property)) {
-          const detail = req.body.data
-          if (detail !== '') {
-            const mainKey = landsDetails[id]
-            mainKey[property] = detail
-          }
-          fs.writeFileSync('store.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
-          res.write('\r\n' + 'Land details modified' + '\r\n')
-          res.end(JSON.stringify(landsDetails[id]), null, 2)
-        } else {
-          res.end('Entered property is not exist')
-        }
+        reqProperty = property
+        res.sendFile(path.join(__dirname, '/changeData.HTML'))
       }
     }
   })
 })
+router.get('/changeProperty/id/prop/data', function (req, res) {
+  fs.readFile('store2.txt', 'utf8', function (err, data) {
+    if (!err) {
+      const landsDetails = JSON.parse(data)
+      const id = surveyNumber
+      const property = reqProperty
+      const detail = req.query.value
+      if (detail !== '') {
+        const mainKey = landsDetails[id]
+        mainKey[property] = detail
+      }
+      fs.writeFileSync('store2.txt', JSON.stringify(landsDetails, null, 2), 'utf8')
+      res.write('\r\n' + 'Land details modified' + '\r\n')
+      res.end(JSON.stringify(landsDetails[id]), null, 2)
+    }
+  })
+})
 
-app.listen(8080, function () {
+app.use('/', router)
+app.listen(8586, function () {
   console.log('Node server is running..')
 })
