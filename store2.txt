@@ -1,0 +1,22 @@
+{
+  "123": {
+    "plot_id": "123",
+    "len": "5000",
+    "wid": "4000",
+    "owner_name": "Gilbert",
+    "contact_no": "09698418282",
+    "soil": "Red Soil",
+    "soil_ph": "5",
+    "plant": "Tea"
+  },
+  "274": {
+    "plot_id": "274",
+    "len": "15000",
+    "wid": "8000",
+    "owner_name": "Andrews",
+    "contact_no": "09698418282",
+    "soil": "Red Soil",
+    "soil_ph": "5",
+    "plant": "Rice"
+  }
+}
